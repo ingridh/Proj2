@@ -1,4 +1,3 @@
-
 public class Expression {
 	
 	private subExpression root;
@@ -19,25 +18,18 @@ public class Expression {
 	
 	private subExpression constructorHelper (String s) throws IllegalLineException{
     	subExpression node;
-		if (s.charAt (0) != '(') {
-			if ((s.contains("(")) || (s.contains(")"))){
-				throw new IllegalLineException("Error: unbalanced parentheses");
-			}
-	    	if (s.charAt (0) == '~') {
-	    		if (s.length() == 1) {
-	    			throw new IllegalLineException("Error: missing proposition");
-	    		}
+	if (s.charAt (0) != '(') {
+	    	if ((s.charAt (0) == '~') && (s.length() > 1)) {
 	    		node = new subExpression ("~", constructorHelper(s.substring(1,s.length())),null);
+	    	} else if ((s.length() == 1) && (Character.isLowerCase(s.charAt(0)))) {
+	    		node = new subExpression (s);
 	    	} else {
-				if (s.substring(1).contains("~")) {
-					throw new IllegalLineException("Error: unbalanced expression");
-				}
-	    		node = new subExpression (s.substring(0));
+	    		throw new IllegalLineException("Error: proposition must be single lowercase letter");
 	    	}
 	         return node;
-		} else if ((s.charAt(1) == '~') && (s.charAt(2) == '(')) {
-			return new subExpression ("~", constructorHelper(s.substring(2,s.length() - 1)), null);
-	    } else {
+	} else if ((s.charAt(1) == '~') && (s.charAt(2) == '(')) {		// allows for either ~(p=>q) or (~(p=>q))
+		return new subExpression ("~", constructorHelper(s.substring(2,s.length() - 1)), null);
+	} else {								// finds top-level operand to be root node of the Expression Tree
 	        int nesting = 0;
 	        String opnd1 = null;
 	        String opnd2 = null;
@@ -58,6 +50,7 @@ public class Expression {
 	    	        opnd1 = s.substring (1, k);
 	    	        opnd2 = s.substring (k+2, s.length()-1);
 	    	        op = s.substring (k, k+2);
+	    	        break;
 	            }
 	        }
 	        if ((opnd1 == null) || (opnd2 == null || (op == null))) {
@@ -70,9 +63,7 @@ public class Expression {
 	        	System.out.println ("operand 2  = " + opnd2);
 	        	System.out.println ( );
 	        }
-	        node = new subExpression(op,
-	        		constructorHelper(opnd1), constructorHelper(opnd2));
-	        return node;
+	        return new subExpression(op, constructorHelper(opnd1), constructorHelper(opnd2));
 	    }
 	}
 	
@@ -107,17 +98,17 @@ public class Expression {
 		root.isSet = true;
 	}
 	
+	// invariants: no parentheses in subExpression names
+	// no operands at leaves
+	// if subExpression has myLeft, but no myRight, name must be "~"
 	public boolean isOK () {
-		// invariants: no parentheses in subExpression names
-		// no operands at leaves
-		// in subExpression has myLeft, but no myRight, name must be "~"
 		try {
 			check(root);
-			return true;
 		} catch(IllegalLineException e){
 			System.out.println(e.getMessage());
 			return false;
 		}
+		return true;
 	}
 	
 	private void check (subExpression x) throws IllegalLineException {
