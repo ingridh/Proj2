@@ -1,6 +1,6 @@
 public class Expression {
 	
-	private subExpression root;
+	protected subExpression root;
 
 	public Expression () {
 		root = null;
@@ -97,6 +97,9 @@ public class Expression {
 		root.value = b;
 		root.isSet = true;
 	}
+	public subExpression getRoot() {
+		return root;
+	}
 	
 	// invariants: no parentheses in subExpression names
 	// no operands at leaves
@@ -130,9 +133,9 @@ public class Expression {
 		}
 	}
 	
-	private static class subExpression {
+	protected static class subExpression {
 		
-		private boolean value;	// true of false value of node (can be set by "assume" or by checking logic)
+		private boolean value;	// true or false value of node (can be set by "assume" or by checking logic)
 		private boolean isSet;	// false if value is false by default
 		private String name;	// string representation of the proposition or operand
 		private subExpression myLeft;
@@ -148,6 +151,14 @@ public class Expression {
 			myLeft = left;
 			myRight = right;
 		}
-		
+		public String getName() {
+			return name;
+		}
+		public subExpression getLeft() {
+			return myLeft;
+		}
+		public subExpression getRight() {
+			return myRight;
+		}
 	}
 }

@@ -27,7 +27,7 @@ public class ExpressionTest extends TestCase {
 		try {
 			u = new Expression("(~(BOB&(~FRANK=>BOB)))");
 			u.print();
-		} catch (IllegalLiineException e) {
+		} catch (IllegalLineException e) {
 			assertEquals(e.getMessage(),"Error: proposition must be single lowercase letter");
 			thrown = true;
 		}
