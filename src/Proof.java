@@ -3,16 +3,19 @@ import java.util.*;
 public class Proof {
 	
 	private final List<String> validreason= Arrays.asList("assume", "show", "mt", "co", "ic", "mp", "repeat", "print");
-	private Hashtable<String, Expression> UserInput;
-		
+	private Hashtable<String, Expression> AssumeProven; //Stores proven or assumed expressions.	
+	private Hashtable<String, Expression> toShow; //Expressions that need to be proved. 
+	//Need to add variable for expr to be proved?
 	private ArrayList<String> toPrint;
-	private LineNumber currentline;
+	private LineNumber currentline; 
+	
 	private boolean iAmDebugging=true;
 
 	public Proof (TheoremSet theorems) {
 		currentline = new LineNumber(1); //LineNumber always starts with 1.
 		toPrint = new ArrayList<String>();
-		UserInput= new Hashtable<String, Expression>();
+		AssumeProven= new Hashtable<String, Expression>();
+		toShow= new Hashtable<String, Expression>();
 	}
 
 	public LineNumber nextLineNumber ( ) {
@@ -20,64 +23,88 @@ public class Proof {
 	}
 
 	public void extendProof (String x) throws IllegalLineException, IllegalInferenceException {
-		
-		//Rearrange the order?
-		
+		x=x.trim(); //Remove space from beginning and end. 		
 		String[] split = x.split("\\s+"); //Split string by white space.
-		toPrint.add(currentline + "\t"+x);
-		//if (iAmDebugging) {
-			//System.out.println(split[0]);
-		//}
-		if (!validreason.contains(split[0])) {
-			throw new IllegalLineException("Bad theorem name."); //Not a valid theorem.			
+		String reason = split[0];
+		if (iAmDebugging) {
+			System.out.println(reason);
 		}
-		if (split[0].equals("mp") || split[0].equals("mt") || split[0].equals("co")) {	
-			if (split.length!=4) {
-				throw new IllegalLineException("Wrong number of things.");
-			}
-			//Check if the line actually exists. "Inaccessible Line."
-
-			if (!(currentline.isLegalLine(split[1]) && currentline.isLegalLine(split[2]))) {
-				throw new IllegalLineException("Bad line number."); //Needs to include the wrong line?
-			}
+		String expr = split[split.length-1];
+		if (!validreason.contains(reason)) { //Not a valid theorem or reason.	
+			throw new IllegalLineException("Bad theorem name."); 		
+		}
+		checkArgLen(reason, split.length); //Correct argument length.
+		if (reason.equals("show")) {
+			toShow.put(currentline.toString(), new Expression(expr));			
 		} else {
-		if (split[0].equals("print")) {
+			//Add theorem to this case too?
+			if (!reason.equals("assume")) {	//assume doesn't contain line numbers.	
+				String [] NumLine = Arrays.copyOfRange(split, 1, split.length-1);
+				checkNumLine(reason, NumLine);
+			}
+					
+		//Use toString for print?
+		/*if (split[0].equals("print")) {
 			for(int i=0; i<toPrint.size(); i++) {
 				System.out.println(toPrint.get(i));
 			} 
 			return;
+		}*/		
+		
+		//Check theorem here
+		
+		//Successful user input. Placed in AssumeProven.
+		AssumeProven.put(currentline.toString(), new Expression(expr)); 
+		//toPrint.set(toPrint.size()-1, toPrint.get(toPrint.size()-1)+x); //Add string to the rest.
 		}
-		if (split[0].equals("ic")) {
-			
-			if (split.length!=3) {
+		currentline.findNextLine(reason); //Actually put this in nextlinenum?
+		toPrint.add(currentline + "\t"+x); //Store line in toPrint.
+	}
+	
+	private void checkArgLen(String reason, int splitlen) throws IllegalLineException{
+		/*if (iAmDebugging) {
+			System.out.println("length" + splitlen + "reason "+ reason);
+		}*/
+		//Checks correct input length corresponding to reason.
+		if (splitlen==1 || splitlen>4) { //Can never be in this range.
+			throw new IllegalLineException("Wrong number of things.");
+		} else if (reason.equals("mp") || reason.equals("mt") || reason.equals("co")) {	
+			if (splitlen!=4) {
 				throw new IllegalLineException("Wrong number of things.");
-			}			
-			
-			
-			//Check if the line actually exists. "Inaccessible Line."
-
-			if (!currentline.isLegalLine(split[1])) {
-				throw new IllegalLineException("Bad line number."); //Needs to include the wrong line?
+			}
+		} else if (reason.equals("ic")) {
+			if (splitlen!=3) {
+				throw new IllegalLineException("Wrong number of things.");
+			}
+		} else {
+			if (splitlen!=2) {
+				throw new IllegalLineException("Wrong number of things.");
+			} 
+		}
+	}
+	
+	private void checkNumLine( String reason, String[] line) throws IllegalLineException {
+		for (int i =0; i<line.length;i++) {
+			if (!seenLine(line[i])) { //No such line exists.	
+				throw new IllegalLineException("Inaccessible line."); 		
+			}
+			if (!currentline.isLegalLine(line[i])) { //Illegal references.
+				throw new IllegalLineException("Bad line number."); //Needs to include the wrong line?				
+			}
+		}	
+		
+	}
+	
+	private boolean seenLine(String s) { //checks if user has called line before.
+		Enumeration<String> e = AssumeProven.keys();
+		while(e.hasMoreElements()) {
+			if (e.nextElement().equals(s)) {
+				return true;
 			}
 		}
-		if (split.length!=2) {
-			throw new IllegalLineException("Wrong number of things.");
-		} 
-
-		
-		if (split[0].equals("assume")) {
-		}
-
-		if (split[0].equals("show")) {
-		}
-		if (split[0].equals("repeat")) {
-		}		
-		//Check theorem here
-		}
-		UserInput.put(currentline.toString(), new Expression(split[split.length-1]));
-		//toPrint.set(toPrint.size()-1, toPrint.get(toPrint.size()-1)+x); //Add string to the rest.
-		currentline.findNextLine(split[0]);
+		return false;
 	}
+	
 
 	public String toString ( ) {
 		return "";
