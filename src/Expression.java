@@ -1,6 +1,7 @@
+
 public class Expression {
 	
-	public subExpression root;
+	protected subExpression root;
 
 	public Expression () {
 		root = null;
@@ -18,58 +19,56 @@ public class Expression {
 	
 	private subExpression constructorHelper (String s) throws IllegalLineException{
     	subExpression node;
-    	if (s.charAt (0) != '(') {
-    		if ((s.charAt (0) == '~') && (s.length() > 1)) {
-    			node = new subExpression ("~", constructorHelper(s.substring(1,s.length())),null);
-    			} else if ((s.length() == 1) && (Character.isLowerCase(s.charAt(0)))) {
-    			node = new subExpression (s);
-    			} else {
-    			throw new IllegalLineException("Error: proposition must be single lowercase letter");
-    			}
-    		return node;
-    		} else if ((s.charAt(1) == '~') && (s.charAt(2) == '(')) {		// allows for either ~(p=>q) or (~(p=>q))
-    			return new subExpression ("~", constructorHelper(s.substring(2,s.length() - 1)), null);
-    			} else {								// finds top-level operand to be root node of the Expression Tree
-    				int nesting = 0;
-    				String opnd1 = null;
-    				String opnd2 = null;
-    				String op = null;
-    				for (int k=1; k<s.length()-1; k++) {
-    					if (s.charAt(k) == '(') {
-    						nesting++;
-    					} else if (s.charAt(k) == ')') {
-    						nesting--;
-    					} else if ((s.charAt(k) == '&' ||
-    							s.charAt(k) == '|') 
-    							&& (nesting == 0)) {
-    						opnd1 = s.substring (1, k);
-    						opnd2 = s.substring (k+1, s.length()-1);
-    						op = s.substring (k, k+1);
-    						break;
-    					} else if ((s.charAt(k) == '=') && (nesting == 0)) {
-    						opnd1 = s.substring (1, k);
-    						opnd2 = s.substring (k+2, s.length()-1);
-    						op = s.substring (k, k+2);
-    						break;
-    					}
-    				}
-    				if ((opnd1 == null) || (opnd2 == null || (op == null))) {
-    					throw new IllegalLineException("Error: unbalanced parentheses or no operands");
-    				}
-    				if (ProofChecker.iAmDebugging) {
-    					System.out.println ("expression = " + s);
-    					System.out.println ("operand 1  = " + opnd1);
-    					System.out.println ("operator   = " + op);
-    					System.out.println ("operand 2  = " + opnd2);
-    					System.out.println ( );
-    				}
-    				return new subExpression(op, constructorHelper(opnd1), constructorHelper(opnd2));
-    			}
-		}
+		if (s.charAt (0) != '(') {
+	    	if ((s.charAt (0) == '~') && (s.length() > 1)) {
+	    		node = new subExpression (s,"~", constructorHelper(s.substring(1,s.length())),null);
+	    	} else if ((s.length() == 1) && (Character.isLowerCase(s.charAt(0)))) {
+	    		node = new subExpression (s,s);
+	    	} else {
+	    		throw new IllegalLineException("Error: proposition must be single lowercase letter");
+	    	}
+	         return node;
+		} else if ((s.charAt(1) == '~') && (s.charAt(2) == '(')) {		// allows for either ~(p=>q) or (~(p=>q))
+			return new subExpression (s,"~", constructorHelper(s.substring(2,s.length() - 1)), null);
+	    } else {							// finds top-level operand to be root node of the Expression Tree
+	        int nesting = 0;
+	        String opnd1 = null;
+	        String opnd2 = null;
+	        String op = null;
+	        for (int k=1; k<s.length()-1; k++) {
+	            if (s.charAt(k) == '(') {
+	            	nesting++;
+	            } else if (s.charAt(k) == ')') {
+	            	nesting--;
+	            } else if ((s.charAt(k) == '&' || s.charAt(k) == '|') && (nesting == 0)) {
+	    	        opnd1 = s.substring (1, k);
+	    	        opnd2 = s.substring (k+1, s.length()-1);
+	    	        op = s.substring (k, k+1);
+	            	break;
+	            } else if ((s.charAt(k) == '=') && (nesting == 0)) {
+	    	        opnd1 = s.substring (1, k);
+	    	        opnd2 = s.substring (k+2, s.length()-1);
+	    	        op = s.substring (k, k+2);
+	    	        break;
+	            }
+	        }
+	        if ((opnd1 == null) || (opnd2 == null || (op == null))) {
+	        	throw new IllegalLineException("Error: unbalanced parentheses or no operands");
+	        }
+	        if (ProofChecker.iAmDebugging) {
+	        	System.out.println ("expression = " + s);
+	        	System.out.println ("operand 1  = " + opnd1);
+	        	System.out.println ("operator   = " + op);
+	        	System.out.println ("operand 2  = " + opnd2);
+	        	System.out.println ( );
+	        }
+	        return new subExpression(s,op, constructorHelper(opnd1), constructorHelper(opnd2));
+	    }
+	}
 	
 	public void print ( ) {
 	    if (root != null) {
-	    	printHelper (root, 0);
+	        printHelper (root, 0);
 	    }
 	    System.out.println("");
 	}
@@ -93,12 +92,15 @@ public class Expression {
 	    System.out.println (obj);
 	}
 	
-	public void set (boolean b) {
-		root.value = b;
-		root.isSet = true;
-	}
 	public subExpression getRoot() {
 		return root;
+	}
+	
+	public boolean proven() {
+		if ((root.value == true) && (root.isSet == true)) {
+			return true;
+		}
+		return false;
 	}
 	
 	// invariants: no parentheses in subExpression names
@@ -133,26 +135,81 @@ public class Expression {
 		}
 	}
 	
-	public static class subExpression {
+	public void set (String s, boolean b) {
+		// NOT COMPLETE
+		try {
+			findAndSet (root,s,b);
+		} catch (IllegalInferenceException e) {
+			System.out.println(e.getMessage());;
+		}
+	}
+
+	public void findAndSet (subExpression x, String s, boolean b) throws IllegalInferenceException {
+		// sets every subExpression with total == s to be true
+		// searched Expression tree in preorder
+		if (ProofChecker.iAmDebugging==true) {
+			if (x == root) {
+				System.out.println("setting " + s + " to " + b);
+			}
+			System.out.println("checking node " + x.getTotal());
+		}
+		if (s.equals(x.total)) {
+			x.value = b;
+			x.isSet = true;
+			if (s.charAt(0) == '~') {
+				x.myLeft.value = !b;
+				x.myLeft.isSet = true;
+				if (ProofChecker.iAmDebugging==true) {
+					System.out.println(x.myLeft.getTotal() + " is now set to " + !b);
+				}
+			}
+			if (ProofChecker.iAmDebugging==true) {
+				System.out.println(x.getTotal() + " is now set to " + b);
+			}
+		}
+		if (x.myLeft != null) {
+			findAndSet(x.myLeft,s,b);
+		}
+		if (x.myRight != null) {
+			findAndSet(x.myRight,s,b);
+		}
+	}
+	
+	protected static class subExpression {
 		
-		private boolean value;	// true or false value of node (can be set by "assume" or by checking logic)
+		private boolean value;	// true of false value of node (can be set by "assume" or by checking logic)
 		private boolean isSet;	// false if value is false by default
-		public String name;	// string representation of the proposition or operand
-		public subExpression myLeft;
-		public subExpression myRight;
+		private String name;	// string representation of the proposition or operand
+		private String total;	// string representation of expression of which this node is the highest level operand
+		private subExpression myLeft;
+		private subExpression myRight;
 		
-		public subExpression (String s) {
+		public subExpression (String t, String s) {
 			name = s;
+			total = t;
 			myLeft = myRight = null;
 		}
 		
-		public subExpression (String s, subExpression left, subExpression right) {
+		public subExpression (String t, String s, subExpression left, subExpression right) {
 			name = s;
+			total = t;
 			myLeft = left;
 			myRight = right;
 		}
+		
+		public boolean getValue() {
+			return value;
+		}
+		
+		public boolean getIsSet() {
+			return isSet;
+		}
+		
 		public String getName() {
 			return name;
+		}
+		public String getTotal() {
+			return total;
 		}
 		public subExpression getLeft() {
 			return myLeft;
@@ -160,5 +217,6 @@ public class Expression {
 		public subExpression getRight() {
 			return myRight;
 		}
+
 	}
 }
