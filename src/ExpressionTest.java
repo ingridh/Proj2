@@ -2,41 +2,43 @@ import junit.framework.TestCase;
 
 public class ExpressionTest extends TestCase {
 
-  public void testExpression () {
+	public void testExpression () {
 		boolean thrown = false;
 		Expression r = new Expression();
 		Expression s = new Expression();
 		Expression t = new Expression();
 		try {
 			r = new Expression("~p");
-			r.print();
-			s = new Expression("(~q&(~(p=>q)))");
-			s.print();
+			//r.print();
+
+			s = new Expression("(~q&~(p=>q))");
+			//s.print();
+
 			t = new Expression("~(p=>q)");
-			t.print();
+			//t.print();
 		} catch (IllegalLineException e) {
+			System.out.println(e.getMessage());
 			thrown = true;
 		}
 		assertFalse(thrown);
 		assertTrue(r.isOK());
 		assertTrue(s.isOK());
-		assertTrue(t.isOK());
 		
-		Expression u = new Expression();
+
 		thrown = false;
 		try {
-			u = new Expression("(~(BOB&(~FRANK=>BOB)))");
-			u.print();
+			t = new Expression("(~(BOB&(~FRANK=>BOB)))");
+			//t.print();
 		} catch (IllegalLineException e) {
 			assertEquals(e.getMessage(),"Error: proposition must be single lowercase letter");
 			thrown = true;
 		}
-		assertTrue(thrown);
 		
+		Expression u = new Expression();
 		thrown = false;
 		try {
 			u = new Expression("p~");
-			u.print();
+			//u.print();
 		} catch (IllegalLineException e) {
 			assertEquals(e.getMessage(),"Error: proposition must be single lowercase letter");
 			thrown = true;
@@ -78,5 +80,48 @@ public class ExpressionTest extends TestCase {
 			thrown = true;
 		}
 		assertTrue(thrown);
+		
+	}
+	
+	public void testSet() {
+		boolean thrown = false;
+		Expression r = new Expression();
+		Expression s = new Expression();
+		Expression t = new Expression();
+		try {
+			r = new Expression("~p");
+			r.set("p", true);
+			assertFalse(r.getRoot().getValue());
+			assertFalse(r.getRoot().getIsSet());
+			assertTrue(r.getRoot().getLeft().getValue());
+			assertTrue(r.getRoot().getLeft().getIsSet());
+			
+			r = new Expression("~p");
+			r.set("~p", true);
+			assertTrue(r.getRoot().getValue());
+			assertTrue(r.getRoot().getIsSet());
+			assertFalse(r.getRoot().getLeft().getValue());
+			assertTrue(r.getRoot().getLeft().getIsSet());
+			
+			s = new Expression("((p=>q)=>(p=>q))");
+			s.set("(p=>q)", true);
+			assertTrue(s.getRoot().getLeft().getValue());
+			assertTrue(s.getRoot().getLeft().getIsSet());
+			assertTrue(s.getRoot().getRight().getValue());	// sets all instances of (p=>q) in tree
+			assertTrue(s.getRoot().getRight().getIsSet());
+			
+			t = new Expression("~(p=>q)");
+			t.set("~(p=>q)", true);
+			assertTrue(t.getRoot().getValue());
+			assertTrue(t.getRoot().getIsSet());
+			assertFalse(t.getRoot().getLeft().getValue());
+			assertTrue(t.getRoot().getLeft().getIsSet());
+
+		} catch (IllegalLineException e) {
+			System.out.println(e.getMessage());
+			thrown = true;
+		}
+		assertFalse(thrown);
+		
 	}
 }
