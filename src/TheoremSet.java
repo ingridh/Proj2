@@ -1,49 +1,22 @@
 import java.util.*;
 
 public class TheoremSet {
-	ArrayList<Theorem> myTheorems;
+	public HashMap<String,Expression> myTheorems;
 	public TheoremSet () {
-		myTheorems = new ArrayList<Theorem>();
+		myTheorems = new HashMap<String,Expression>();
 	}
 
 	public Expression put (String s, Expression e) {
-		Theorem input = new Theorem(s,e.getRoot());
-		myTheorems.add(input);
+		myTheorems.put(s,e);
 		return null;
 	}
 	public boolean containsTheorem(String name) {
-		if (myTheorems.isEmpty()) {
-			return false;
-		}else {
-			for (Theorem t : myTheorems) {
-				if (t.getName().equals(name)) {
-					return true;
-				}
-			}
-			return false;
-		}
+		return myTheorems.containsKey(name);
 	}
-	public Theorem getTheorem(String name) {
-		if (containsTheorem(name)) {
-			for (Theorem t : myTheorems) {
-				if (t.getName().equals(name)) {
-					return t;
-				}
-			}
-			return null;
-		} else {
-			return null;
-		}
+	public Expression getTheorem(String name) {
+		return myTheorems.get(name);
 	}
-	public boolean matchesThm(Expression exp) {
-		if (exp == null) {
-			return false;
-		}
-		for (Theorem t : myTheorems) {
-			if (t.matches(exp)) {
-				return true;
-			}
-		}
-		return false;
+	public void applyTheorem(String name) {
+		
 	}
 }
