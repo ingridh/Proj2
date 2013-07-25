@@ -8,6 +8,7 @@ public class Proof {
 	//Need to add variable for expr to be proved?
 	private ArrayList<String> toPrint;
 	private LineNumber currentline; 
+	private Expression currentExpression;
 	
 	private boolean iAmDebugging=true;
 
@@ -35,7 +36,8 @@ public class Proof {
 		}
 		checkArgLen(reason, split.length); //Correct argument length.
 		if (reason.equals("show")) {
-			toShow.put(currentline.toString(), new Expression(expr));			
+			currentExpression = new Expression(expr);
+			toShow.put(currentline.toString(), currentExpression);				
 		} else {
 			//Add theorem to this case too?
 			if (!reason.equals("assume")) {	//assume doesn't contain line numbers.	
@@ -111,6 +113,6 @@ public class Proof {
 	}
 
 	public boolean isComplete ( ) {
-		return false;
+		return currentExpression.proven();	
 	}
 }
