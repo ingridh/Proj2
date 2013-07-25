@@ -1,7 +1,7 @@
 
 public class Expression {
 	
-	protected subExpression root;
+	public subExpression root;
 
 	public Expression () {
 		root = null;
@@ -175,14 +175,14 @@ public class Expression {
 		}
 	}
 	
-	protected static class subExpression {
+	public static class subExpression {
 		
-		private boolean value;	// true of false value of node (can be set by "assume" or by checking logic)
-		private boolean isSet;	// false if value is false by default
-		private String name;	// string representation of the proposition or operand
-		private String total;	// string representation of expression of which this node is the highest level operand
-		private subExpression myLeft;
-		private subExpression myRight;
+		public boolean value;	// true of false value of node (can be set by "assume" or by checking logic)
+		public boolean isSet;	// false if value is false by default
+		public String name;	// string representation of the proposition or operand
+		public String total;	// string representation of expression of which this node is the highest level operand
+		public subExpression myLeft;
+		public subExpression myRight;
 		
 		public subExpression (String t, String s) {
 			name = s;
@@ -216,6 +216,46 @@ public class Expression {
 		}
 		public subExpression getRight() {
 			return myRight;
+		}
+		public boolean isVariable() {
+			if (myLeft == null && myRight == null) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		public boolean equals(subExpression e) {
+			boolean lReturn = false;
+			boolean rReturn = false;
+			if (e == null) {
+				return false;
+			}
+			if (!(name.equals(e.name))){
+				System.out.println("My name"+ name);
+				System.out.println("compare"+e.name);
+				return false;
+			} else {
+				if (myLeft != null && e.myLeft != null) {
+					lReturn = myLeft.equals(e.myLeft);
+				} else if (myLeft == null && e.myLeft == null) {
+					lReturn = true;
+				}
+				if (myRight != null && e.myRight != null) {
+					rReturn = myRight.equals(e.myRight);
+				} else if (myRight == null && e.myRight == null) {
+					rReturn = true;
+				}
+			}
+			return lReturn && rReturn;
+		}
+		public void setValid() {
+			this.value = true;
+			if(myLeft != null) {
+				myLeft.setValid();
+			}
+			if(myRight != null) {
+				myRight.setValid();
+			}
 		}
 
 	}

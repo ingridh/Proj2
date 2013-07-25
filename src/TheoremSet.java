@@ -16,7 +16,5 @@ public class TheoremSet {
 	public Expression getTheorem(String name) {
 		return myTheorems.get(name);
 	}
-	public void applyTheorem(String name) {
-		
-	}
+	
 }

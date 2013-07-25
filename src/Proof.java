@@ -9,6 +9,7 @@ public class Proof {
 	private ArrayList<String> toPrint;
 	private LineNumber currentline; 
 	private Expression currentExpression;
+	private TheoremSet myTheorems;
 
 	
 	private boolean iAmDebugging=true;
@@ -18,6 +19,7 @@ public class Proof {
 		AssumeProven= new Hashtable<String, Expression>();
 		toShow= new Hashtable<String, Expression>();
 		currentline = new LineNumber();
+		myTheorems = theorems;
 	}
 
 	public LineNumber nextLineNumber ( ) {
@@ -38,7 +40,7 @@ public class Proof {
 		}
 		String expr2 = split[split.length-1];
 		if (!validreason.contains(reason)) { //Not a valid theorem or reason.	
-			throw new IllegalLineException("Bad theorem name."); 		
+			throw new IllegalLineException("Invalid special command."); 		
 		}
 		checkArgLen(reason, split.length); //Correct argument length.
 		if (reason.equals("show")) {
@@ -80,6 +82,14 @@ public class Proof {
 		}*/		
 		
 		//Check theorem here.
+			//What exactly is happening here? Where are the special commands checked for? I need to check for theorems
+			//after the special commands are checked for.
+			if(myTheorems.containsTheorem(reason)) {
+				//TheoremChecker myChecker = new TheoremChecker(reason.getTheorem(),**expression ToBeEvaluated**);
+				//if TheoremChecker.matchs(reason.getTheorem(),**expression ToBeEvaluated**) {
+				//	myChecker.applyThm(reason.getTheorem(),**expression ToBeEvaluated**);
+				//}
+			}
 		
 		//Successful user input. Placed in AssumeProven.
 		AssumeProven.put(currentline.toString(), new Expression(expr2)); 

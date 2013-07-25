@@ -124,4 +124,15 @@ public class ExpressionTest extends TestCase {
 		assertFalse(thrown);
 		
 	}
+	  public void testSubExpressionEquals() {
+			try {
+				Expression e1 = new Expression("((x&y)=>x)");
+				Expression e2 = new Expression("(x&y)");
+				Expression e3 = new Expression("~((x&y)=>x)");
+				assertTrue(e1.root.equals(e3.root.myLeft));
+				assertTrue(e2.root.equals(e1.root.myLeft));
+			} catch (IllegalLineException e) {
+				fail();
+			}
+	  }
 }
