@@ -131,10 +131,10 @@ public class Expression {
 	
 	public static class subExpression {
 		
-		public String name;	// string representation of the proposition or operand
-		public String total;	// string representation of expression of which this node is the highest level operand
-		public subExpression myLeft;
-		public subExpression myRight;
+		private String name;	// string representation of the proposition or operand
+		private String total;	// string representation of expression of which this node is the highest level operand
+		private subExpression myLeft;
+		private subExpression myRight;
 		
 		public subExpression (String t, String s) {
 			name = s;
@@ -191,15 +191,6 @@ public class Expression {
 				}
 			}
 			return lReturn && rReturn;
-		}
-		public void setValid() {
-			this.value = true;
-			if(myLeft != null) {
-				myLeft.setValid();
-			}
-			if(myRight != null) {
-				myRight.setValid();
-			}
 		}
 
 	}

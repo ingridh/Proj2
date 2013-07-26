@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class TheoremSet {
-	public HashMap<String,Expression> myTheorems;
+	private HashMap<String,Expression> myTheorems;
 	public TheoremSet () {
 		myTheorems = new HashMap<String,Expression>();
 	}
@@ -16,5 +16,7 @@ public class TheoremSet {
 	public Expression getTheorem(String name) {
 		return myTheorems.get(name);
 	}
-	
+	public boolean containsExpression(Expression e) {
+		return myTheorems.containsValue(e);
+	}
 }
