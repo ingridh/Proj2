@@ -1,4 +1,3 @@
-
 public class Expression {
 	
 	public subExpression root;
@@ -96,12 +95,6 @@ public class Expression {
 		return root;
 	}
 	
-	public boolean proven() {
-		if ((root.value == true) && (root.isSet == true)) {
-			return true;
-		}
-		return false;
-	}
 	
 	// invariants: no parentheses in subExpression names
 	// no operands at leaves
@@ -134,51 +127,10 @@ public class Expression {
 			check(x.myRight);
 		}
 	}
-	
-	public void set (String s, boolean b) {
-		// NOT COMPLETE
-		try {
-			findAndSet (root,s,b);
-		} catch (IllegalInferenceException e) {
-			System.out.println(e.getMessage());;
-		}
-	}
 
-	public void findAndSet (subExpression x, String s, boolean b) throws IllegalInferenceException {
-		// sets every subExpression with total == s to be true
-		// searched Expression tree in preorder
-		if (ProofChecker.iAmDebugging==true) {
-			if (x == root) {
-				System.out.println("setting " + s + " to " + b);
-			}
-			System.out.println("checking node " + x.getTotal());
-		}
-		if (s.equals(x.total)) {
-			x.value = b;
-			x.isSet = true;
-			if (s.charAt(0) == '~') {
-				x.myLeft.value = !b;
-				x.myLeft.isSet = true;
-				if (ProofChecker.iAmDebugging==true) {
-					System.out.println(x.myLeft.getTotal() + " is now set to " + !b);
-				}
-			}
-			if (ProofChecker.iAmDebugging==true) {
-				System.out.println(x.getTotal() + " is now set to " + b);
-			}
-		}
-		if (x.myLeft != null) {
-			findAndSet(x.myLeft,s,b);
-		}
-		if (x.myRight != null) {
-			findAndSet(x.myRight,s,b);
-		}
-	}
 	
 	public static class subExpression {
 		
-		public boolean value;	// true of false value of node (can be set by "assume" or by checking logic)
-		public boolean isSet;	// false if value is false by default
 		public String name;	// string representation of the proposition or operand
 		public String total;	// string representation of expression of which this node is the highest level operand
 		public subExpression myLeft;
@@ -195,14 +147,6 @@ public class Expression {
 			total = t;
 			myLeft = left;
 			myRight = right;
-		}
-		
-		public boolean getValue() {
-			return value;
-		}
-		
-		public boolean getIsSet() {
-			return isSet;
 		}
 		
 		public String getName() {
