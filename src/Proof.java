@@ -76,15 +76,22 @@ public class Proof {
 								implication.getRoot().getRight().getName().equals(inputexpr));
 					}*/
 					if (reason.equals("co")) {
-						//Fix this!!! Var must be outside to be correct.
+						//Don't use if/else. What happens if neither have "~"?
+						//See if any have negate /
+						//Use OR on last if statement?
+						
+						Expression hasNegate;
+						Expression noNegate;
 						if (AssumeProven.get(NumLine[0]).getRoot().getName().equals("~")) {
-							Expression hasNegate = AssumeProven.get(NumLine[0]);
-							Expression noNegate = AssumeProven.get(NumLine[1]);
+							hasNegate = AssumeProven.get(NumLine[0]);
+							noNegate = AssumeProven.get(NumLine[1]);
 						} else {
-							Expression hasNegate = AssumeProven.get(NumLine[1]);
-							Expression noNegate = AssumeProven.get(NumLine[0]);							
+							hasNegate = AssumeProven.get(NumLine[1]);
+							noNegate = AssumeProven.get(NumLine[0]);							
 						}
-						if (hasNegate.getRoot().equals(noNegate.getRoot())) {
+						// Expr after the ~ must be equal to the other expr.
+						if (!hasNegate.getRoot().getRight().equals(noNegate.getRoot())) {
+							throw new IllegalInferenceException("No contradiction made.");
 						}					
 						//Check if ~ is first then if right node equals the other line.
 					}
@@ -95,13 +102,13 @@ public class Proof {
 					// Line referred to must be the right of the expr inferred. 
 					//Also must be something the innermost show. 
 					if (!(inputExpr.getRoot().getRight().equals(AssumeProven.get(NumLine[0]).getRoot()) && 
-								inputExpr.getRoot().equals(toShow.get(innerShow).getRoot()))) {
+								inputExpr.equals(toShow.get(innerShow)))) {
 							throw new IllegalInferenceException("Bad inference.");
 					} 
 				}
 				
 				if (reason.equals("repeat")) {	
-					if (!inputExpr.getRoot().equals(AssumeProven.get(NumLine[0]).getRoot())) {
+					if (!inputExpr.equals(AssumeProven.get(NumLine[0]))) {
 						throw new IllegalInferenceException("Bad inference.");
 					}
 				}
@@ -119,7 +126,7 @@ public class Proof {
 		AssumeProven.put(currentline.toString(), inputExpr); 
 		toPrint.add(currentline + "\t"+x); //Store line in toPrint.
 		// Proving innermost show and ending a subproof. 
-		if (inputExpr.getRoot().equals(toShow.get(innerShow).getRoot())) {
+		if (inputExpr.equals(toShow.get(innerShow))) {
 			AssumeProven.put(innerShow, toShow.get(innerShow));
 			showOrder.remove(showOrder.size()-1);		
 		} else{
