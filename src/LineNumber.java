@@ -13,7 +13,7 @@ public class LineNumber {
 	
 	public void setLineNumber(String s) throws IllegalLineException {
 		if (s.charAt(s.length()-1)=='.') {
-			throw new IllegalLineException("Extra period.");				
+			throw new IllegalLineException("No ending periods.");				
 		}
 		current = new ArrayList<Integer>();
 		//Makes string into a array of integers.
@@ -46,26 +46,6 @@ public class LineNumber {
 	
 	public void nextLine() { //Not starting or ending subproof.
 		current.set(current.size()-1, current.get(current.size()-1)+1);
-		}
-	
-	//Delete this?
-	public void findNextLine(String s) {
-		
-		//Needs another case for valid but unnecessary contradictions.
-		//Find nextline if completes subproof/proof.
-		
-		
-		if (s.equals("show") && current.get(0)!=1) {
-			current.add(1); //Start subproof.
-		} else {
-			if (s.equals("ic")) {
-					if (current.size()!=1) { //Inside a subproof.
-						current.remove(current.size()-1); //Exit subproof.
-					}
-				}
-			//Next line outside of subproof.
-			current.set(current.size()-1, current.get(current.size()-1)+1);
-			}
 		}
 		 
 	//Check if the line array 
