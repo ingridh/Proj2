@@ -83,7 +83,7 @@ public class LineNumber {
 			}
 		}
 		//Last integer must be less than last integer of current line.
-		if (n.current.get(sizeOfN-1) > current.get(sizeOfN-1)) {
+		if (n.current.get(sizeOfN-1) >= current.get(sizeOfN-1)) {
 			throw new IllegalInferenceException("Inaccessible line."); 		
 		}
 	}
