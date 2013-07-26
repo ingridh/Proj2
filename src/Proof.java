@@ -6,11 +6,10 @@ public class Proof {
 	private HashMap<String, Expression> AssumeProven; //Stores proven or assumed expressions.	
 	private HashMap<String, Expression> toShow; //Expressions that need to be proved. 
 	private ArrayList<String> showOrder; //Line number referring to show in order.
-	//Need to add variable for expr to be proved?
 	private ArrayList<String> toPrint;
 	private LineNumber currentline; 
-	private Expression currentExpression;
 	private TheoremSet myTheorems;
+	private boolean justSeenShow; //if a show was the last step.
 
 	
 	private boolean iAmDebugging=true;
@@ -20,6 +19,7 @@ public class Proof {
 		AssumeProven= new HashMap<String, Expression>();
 		toShow= new HashMap<String, Expression>();
 		currentline = new LineNumber();
+		showOrder= new ArrayList<String>();
 		myTheorems = theorems;
 	}
 
@@ -28,9 +28,7 @@ public class Proof {
 		}
 
 	public void extendProof (String x) throws IllegalLineException, IllegalInferenceException {
-		
-		//handle print case with arglength and everything! 
-		
+
 		x=x.trim(); //Remove space from beginning and end. 	
 		if (x.equals("print")) {
 			System.out.println(toString());
@@ -41,21 +39,28 @@ public class Proof {
 		if (iAmDebugging) {
 			System.out.println(reason);
 		}
-		String expr2 = split[split.length-1];
+		String inputExprStr = split[split.length-1];
+		Expression inputExpr = new Expression(inputExprStr);
 		if (!validreason.contains(reason)) { //Not a valid theorem or reason.	
 			throw new IllegalLineException("Bad theorem name."); 		
 		}
 		checkArgLen(reason, split.length); //Correct argument length.
 		if (reason.equals("show")) {
-			currentExpression = new Expression(expr2);
-			toShow.put(currentline.toString(), currentExpression);	
+			toShow.put(currentline.toString(), inputExpr);	
 			showOrder.add(currentline.toString());
+			toPrint.add(currentline + "\t"+x); //Store line in toPrint.
+			currentline.startSubproof();
+			justSeenShow = true;
 		} else {
-			//Add theorem to this case too?
-			if (!reason.equals("assume")) {	//assume doesn't contain line numbers.	
+			String innerShow = showOrder.get(showOrder.size()-1);
+			if (reason.equals("assume")) {
+				if (!justSeenShow) {
+					throw new IllegalInferenceException("Assume must be after show.");
+				}
+				AssumeProven.put(currentline.toString(), inputExpr); 
+			} else {
 				String [] NumLine = Arrays.copyOfRange(split, 1, split.length-1);
 				checkNumLine(NumLine);
-				boolean correctLogic;
 				Expression implication;
 				String expr1;
 				if (NumLine.length==2) { //mp, mt, co cases.
@@ -68,38 +73,39 @@ public class Proof {
 					}	
 					/*if (reason.equals("mp")) {
 						correctLogic = (implication.getRoot().getLeft().getName().equals(expr1) &&
-								implication.getRoot().getRight().getName().equals(expr2));
+								implication.getRoot().getRight().getName().equals(inputexpr));
 					}*/
 					if (reason.equals("co")) {
+						//Fix this!!! Var must be outside to be correct.
+						if (AssumeProven.get(NumLine[0]).getRoot().getName().equals("~")) {
+							Expression hasNegate = AssumeProven.get(NumLine[0]);
+							Expression noNegate = AssumeProven.get(NumLine[1]);
+						} else {
+							Expression hasNegate = AssumeProven.get(NumLine[1]);
+							Expression noNegate = AssumeProven.get(NumLine[0]);							
+						}
+						if (hasNegate.getRoot().equals(noNegate.getRoot())) {
+						}					
 						//Check if ~ is first then if right node equals the other line.
-						//Dependent on expr
 					}
 				
-				//Continue on...
 				
-			}
-				//Depends on expr.
+			} else {
 				if (reason.equals("ic")) {
-					Expression resultexpr = new Expression(expr2);
 					// Line referred to must be the right of the expr inferred. 
 					//Also must be something the innermost show. 
-					if (!(resultexpr.root.myRight.total.equals(AssumeProven.get(NumLine[0])) && 
-								expr2.equals(toShow.get(showOrder.get(showOrder.size()-1))))) {
+					if (!(inputExpr.getRoot().getRight().equals(AssumeProven.get(NumLine[0]).getRoot()) && 
+								inputExpr.getRoot().equals(toShow.get(innerShow).getRoot()))) {
 							throw new IllegalInferenceException("Bad inference.");
 					} 
 				}
 				
-				//Depends on expr. 
 				if (reason.equals("repeat")) {	
-					if (!expr2.equals(AssumeProven.get(NumLine[0]))) {
+					if (!inputExpr.getRoot().equals(AssumeProven.get(NumLine[0]).getRoot())) {
 						throw new IllegalInferenceException("Bad inference.");
 					}
-					
 				}
 			}
-			
-					
-	
 		
 		//Check theorem here.
 			//What exactly is happening here? Where are the special commands checked for? I need to check for theorems
@@ -110,22 +116,21 @@ public class Proof {
 				//	myChecker.applyThm(reason.getTheorem(),**expression ToBeEvaluated**);
 				//}
 			}
-			
 		
-		
+		}
 		//Successful user input. Placed in AssumeProven.
-		AssumeProven.put(currentline.toString(), new Expression(expr2)); 
-		}
-		
-		// Ending a subproof. 
-		if (expr2.equals(toShow.get(showOrder.get(showOrder.size()-1)))) {
-			AssumeProven.put(showOrder.get(showOrder.size()-1), toShow.get(showOrder.get(showOrder.size()-1)));
-			showOrder.remove(showOrder.size()-1);		
-		}
-		
-		currentline.findNextLine(reason); //Actually put this in nextlinenum?
+		AssumeProven.put(currentline.toString(), inputExpr); 
 		toPrint.add(currentline + "\t"+x); //Store line in toPrint.
+		// Proving innermost show and ending a subproof. 
+		if (inputExpr.getRoot().equals(toShow.get(innerShow).getRoot())) {
+			AssumeProven.put(innerShow, toShow.get(innerShow));
+			showOrder.remove(showOrder.size()-1);		
+		} else{
+			currentline.nextLine();
+		}
+		justSeenShow=false; //This step is not a show.
 	}
+}
 	
 	private void checkArgLen(String reason, int splitlen) throws IllegalLineException{
 		/*if (iAmDebugging) {
@@ -148,21 +153,14 @@ public class Proof {
 			LineNumber currentNumLine = new LineNumber();
 			currentNumLine.setLineNumber(currentLineStr);
 			currentline.isAccessibleLine(currentNumLine); //Throws error for illegal references.
-			seenLine(currentLineStr); //Throws for nonexistent lines.	
-			}	
-	}
-	
-
-	private void seenLine(String s) throws IllegalInferenceException { //checks if user has called line before.
-		Enumeration<String> e = AssumeProven.keys();
-		while(e.hasMoreElements()) {
-			if (e.nextElement().equals(s)) {
-				return;
+			if (iAmDebugging) {
+				System.out.println(!AssumeProven.containsKey(currentLineStr));
 			}
-		}
-		throw new IllegalInferenceException("Inaccessible line."); 		
+			if (!AssumeProven.containsKey(currentLineStr)) { //Throws for nonexistent lines.	
+				throw new IllegalInferenceException("Line doesn't exist: " + currentLineStr); 		
+			}
+		}	
 	}
-	
 
 	public String toString ( ) {
 		String temp="";
@@ -173,9 +171,6 @@ public class Proof {
 	}
 
 	public boolean isComplete ( ) {
-		if ((toShow.isEmpty())	&& (currentline.toString() != "1")) {
-			return true;
-		}
-		return false;
+		return ((showOrder.isEmpty()) && (currentline.toString() != "1"));
 	}
 }
