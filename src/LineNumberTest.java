@@ -66,7 +66,7 @@ public class LineNumberTest extends TestCase {
 		try {//Extra ending period.
 			c.setLineNumber("3.1.");
 		} catch (IllegalLineException e) {
-			assertEquals(e.getMessage(),"Extra period.");			
+			assertEquals(e.getMessage(),"No ending periods.");			
 			thrown = true;
 		}
 		assertTrue(thrown);
