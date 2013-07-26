@@ -87,8 +87,8 @@ public class ExpressionTest extends TestCase {
 				Expression e1 = new Expression("((x&y)=>x)");
 				Expression e2 = new Expression("(x&y)");
 				Expression e3 = new Expression("~((x&y)=>x)");
-				assertTrue(e1.root.equals(e3.getRoot().getLeft()));
-				assertTrue(e2.root.equals(e1.getRoot().getLeft()));
+				assertTrue(e1.getRoot().equals(e3.getRoot().getLeft()));
+				assertTrue(e2.getRoot().equals(e1.getRoot().getLeft()));
 			} catch (IllegalLineException e) {
 				fail();
 			}

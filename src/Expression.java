@@ -1,6 +1,6 @@
 public class Expression {
 	
-	public subExpression root;
+	private subExpression root;
 
 	public Expression () {
 		root = null;
@@ -64,7 +64,6 @@ public class Expression {
 	        return new subExpression(s,op, constructorHelper(opnd1), constructorHelper(opnd2));
 	    }
 	}
-	
 	public void print ( ) {
 	    if (root != null) {
 	        printHelper (root, 0);
@@ -94,7 +93,9 @@ public class Expression {
 	public subExpression getRoot() {
 		return root;
 	}
-	
+	public boolean equals(Expression e) {
+		return root.equals(e.getRoot());
+	}
 	
 	// invariants: no parentheses in subExpression names
 	// no operands at leaves
@@ -175,8 +176,10 @@ public class Expression {
 				return false;
 			}
 			if (!(name.equals(e.name))){
-				System.out.println("My name"+ name);
-				System.out.println("compare"+e.name);
+				if (ProofChecker.iAmDebugging) {
+					System.out.println("My name"+ name);
+					System.out.println("compare"+e.name);
+				}
 				return false;
 			} else {
 				if (myLeft != null && e.myLeft != null) {

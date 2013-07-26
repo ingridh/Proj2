@@ -90,8 +90,8 @@ public class Proof {
 					}
 				
 				
-			} else {
-				if (reason.equals("ic")) {
+				} else {
+					if (reason.equals("ic")) {
 					// Line referred to must be the right of the expr inferred. 
 					//Also must be something the innermost show. 
 					if (!(inputExpr.getRoot().getRight().equals(AssumeProven.get(NumLine[0]).getRoot()) && 
@@ -105,16 +105,13 @@ public class Proof {
 						throw new IllegalInferenceException("Bad inference.");
 					}
 				}
+				if(myTheorems.containsTheorem(reason)) { //check whether reason is a theorem
+					TheoremChecker myChecker = new TheoremChecker(myTheorems.getTheorem(reason),inputExpr);
+					if (!myChecker.matchs()) {
+						throw new IllegalInferenceException("Bad theorem application "+myChecker.errorPrinting());
+					}
 			}
-		
-		//Check theorem here.
-			//What exactly is happening here? Where are the special commands checked for? I need to check for theorems
-			//after the special commands are checked for.
-			if(myTheorems.containsTheorem(reason)) {
-				//TheoremChecker myChecker = new TheoremChecker(reason.getTheorem(),**expression ToBeEvaluated**);
-				//if TheoremChecker.matchs(reason.getTheorem(),**expression ToBeEvaluated**) {
-				//	myChecker.applyThm(reason.getTheorem(),**expression ToBeEvaluated**);
-				//}
+			
 			}
 		
 		}
