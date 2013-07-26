@@ -173,6 +173,9 @@ public class Proof {
 	}
 
 	public boolean isComplete ( ) {
-		return currentExpression.proven();	
+		if ((toShow.isEmpty())	&& (currentline.toString() != "1")) {
+			return true;
+		}
+		return false;
 	}
 }
