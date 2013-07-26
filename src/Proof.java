@@ -3,8 +3,9 @@ import java.util.*;
 public class Proof {
 	
 	private final List<String> validreason= Arrays.asList("assume", "show", "mt", "co", "ic", "mp", "repeat", "print");
-	private Hashtable<String, Expression> AssumeProven; //Stores proven or assumed expressions.	
-	private Hashtable<String, Expression> toShow; //Expressions that need to be proved. 
+	private HashMap<String, Expression> AssumeProven; //Stores proven or assumed expressions.	
+	private HashMap<String, Expression> toShow; //Expressions that need to be proved. 
+	private ArrayList<String> showOrder; //Line number referring to show in order.
 	//Need to add variable for expr to be proved?
 	private ArrayList<String> toPrint;
 	private LineNumber currentline; 
@@ -16,23 +17,25 @@ public class Proof {
 
 	public Proof (TheoremSet theorems) {
 		toPrint = new ArrayList<String>();
-		AssumeProven= new Hashtable<String, Expression>();
-		toShow= new Hashtable<String, Expression>();
+		AssumeProven= new HashMap<String, Expression>();
+		toShow= new HashMap<String, Expression>();
 		currentline = new LineNumber();
 		myTheorems = theorems;
 	}
 
 	public LineNumber nextLineNumber ( ) {
-
 		return currentline;
-		
 		}
 
 	public void extendProof (String x) throws IllegalLineException, IllegalInferenceException {
 		
 		//handle print case with arglength and everything! 
 		
-		x=x.trim(); //Remove space from beginning and end. 		
+		x=x.trim(); //Remove space from beginning and end. 	
+		if (x.equals("print")) {
+			System.out.println(toString());
+			return;
+		}
 		String[] split = x.split("\\s+"); //Split string by white space.
 		String reason = split[0];
 		if (iAmDebugging) {
@@ -40,12 +43,13 @@ public class Proof {
 		}
 		String expr2 = split[split.length-1];
 		if (!validreason.contains(reason)) { //Not a valid theorem or reason.	
-			throw new IllegalLineException("Invalid special command."); 		
+			throw new IllegalLineException("Bad theorem name."); 		
 		}
 		checkArgLen(reason, split.length); //Correct argument length.
 		if (reason.equals("show")) {
 			currentExpression = new Expression(expr2);
 			toShow.put(currentline.toString(), currentExpression);	
+			showOrder.add(currentline.toString());
 		} else {
 			//Add theorem to this case too?
 			if (!reason.equals("assume")) {	//assume doesn't contain line numbers.	
@@ -62,24 +66,40 @@ public class Proof {
 						expr1= AssumeProven.get(NumLine[0]).getRoot().getName();
 						implication= AssumeProven.get(NumLine[1]);
 					}	
-					if (reason.equals("mp")) {
+					/*if (reason.equals("mp")) {
 						correctLogic = (implication.getRoot().getLeft().getName().equals(expr1) &&
 								implication.getRoot().getRight().getName().equals(expr2));
+					}*/
+					if (reason.equals("co")) {
+						//Check if ~ is first then if right node equals the other line.
+						//Dependent on expr
 					}
 				
 				//Continue on...
 				
 			}
+				//Depends on expr.
+				if (reason.equals("ic")) {
+					Expression resultexpr = new Expression(expr2);
+					// Line referred to must be the right of the expr inferred. 
+					//Also must be something the innermost show. 
+					if (!(resultexpr.root.myRight.total.equals(AssumeProven.get(NumLine[0])) && 
+								expr2.equals(toShow.get(showOrder.get(showOrder.size()-1))))) {
+							throw new IllegalInferenceException("Bad inference.");
+					} 
+				}
+				
+				//Depends on expr. 
+				if (reason.equals("repeat")) {	
+					if (!expr2.equals(AssumeProven.get(NumLine[0]))) {
+						throw new IllegalInferenceException("Bad inference.");
+					}
+					
+				}
 			}
 			
 					
-		//Use toString for print?
-		/*if (split[0].equals("print")) {
-			for(int i=0; i<toPrint.size(); i++) {
-				System.out.println(toPrint.get(i));
-			} 
-			return;
-		}*/		
+	
 		
 		//Check theorem here.
 			//What exactly is happening here? Where are the special commands checked for? I need to check for theorems
@@ -90,11 +110,19 @@ public class Proof {
 				//	myChecker.applyThm(reason.getTheorem(),**expression ToBeEvaluated**);
 				//}
 			}
+			
+		
 		
 		//Successful user input. Placed in AssumeProven.
 		AssumeProven.put(currentline.toString(), new Expression(expr2)); 
-		//toPrint.set(toPrint.size()-1, toPrint.get(toPrint.size()-1)+x); //Add string to the rest.
 		}
+		
+		// Ending a subproof. 
+		if (expr2.equals(toShow.get(showOrder.get(showOrder.size()-1)))) {
+			AssumeProven.put(showOrder.get(showOrder.size()-1), toShow.get(showOrder.get(showOrder.size()-1)));
+			showOrder.remove(showOrder.size()-1);		
+		}
+		
 		currentline.findNextLine(reason); //Actually put this in nextlinenum?
 		toPrint.add(currentline + "\t"+x); //Store line in toPrint.
 	}
@@ -137,7 +165,11 @@ public class Proof {
 	
 
 	public String toString ( ) {
-		return "";
+		String temp="";
+		for(int i=0; i<toPrint.size(); i++) {
+			temp+= toPrint.get(i) + "\n";
+		} 
+		return temp;
 	}
 
 	public boolean isComplete ( ) {
